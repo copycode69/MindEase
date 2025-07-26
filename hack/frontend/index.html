@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MindEase Companion - AI-powered mental health support available 24/7">
+    <title>MindEase Companion | AI Mental Health Support</title>
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://www.gstatic.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- CSS -->
+    <style>
+        :root {
+            --primary: #6c63ff;
+            --secondary: #4d44db;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #fd7e14;
+            --info: #17a2b8;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7ff;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--primary);
+            color: white;
+            padding: 8px;
+            z-index: 100;
+            transition: top 0.3s;
+        }
+        
+        .skip-link:focus {
+            top: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            font-size: 28px;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 30px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .nav-links a[aria-current="page"] {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .btn:hover:not(:disabled) {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+        }
+        
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn.loading::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 60%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        main {
+            padding-top: 100px;
+            min-height: calc(100vh - 100px);
+        }
+        
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 80px 0;
+        }
+        
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+        
+        .hero p {
+            font-size: 20px;
+            color: #666;
+            max-width: 700px;
+            margin: 0 auto 40px;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+        
+        .feature-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-card i {
+            font-size: 40px;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .login-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--dark);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.2);
+        }
+        
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        
+        .forgot-password a {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .forgot-password a:hover {
+            color: var(--primary);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+        }
+        
+        .social-login {
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .social-login p {
+            color: #666;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .social-login p::before,
+        .social-login p::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 30%;
+            height: 1px;
+            background-color: #ddd;
+        }
+        
+        .social-login p::before {
+            left: 0;
+        }
+        
+        .social-login p::after {
+            right: 0;
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .social-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f5f5f5;
+            color: #666;
+            font-size: 20px;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .social-icon:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-3px);
+        }
+        
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+        
+        .register-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .error-message {
+            color: var(--danger);
+            background-color: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .success-message {
+            color: var(--success);
+            background-color: #d4edda;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .about-section {
+            padding: 80px 0;
+        }
+        
+        .about-section h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 50px;
+            color: var(--dark);
+        }
+        
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+        
+        .about-image img {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .about-text h3 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+        
+        .about-text p {
+            margin-bottom: 15px;
+            color: #666;
+        }
+        
+        .team-section {
+            padding: 60px 0;
+            background-color: #f9f9ff;
+        }
+        
+        .team-section h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 50px;
+            color: var(--dark);
+        }
+        
+        .team-members {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        
+        .team-member {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+        }
+        
+        .team-member:hover {
+            transform: translateY(-10px);
+        }
+        
+        .member-image {
+            height: 250px;
+            overflow: hidden;
+        }
+        
+        .member-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+            loading="lazy";
+        }
+        
+        .team-member:hover .member-image img {
+            transform: scale(1.1);
+        }
+        
+        .member-info {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .member-info h3 {
+            font-size: 20px;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        
+        .member-info p {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        
+        .member-social {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .member-social a {
+            color: #666;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+        
+        .member-social a:hover {
+            color: var(--primary);
+        }
+        
+        .users-section {
+            padding: 80px 0;
+        }
+        
+        .users-section h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 50px;
+            color: var(--dark);
+        }
+        
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-card i {
+            font-size: 40px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .stat-card h3 {
+            font-size: 36px;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+        
+        .stat-card p {
+            color: #666;
+            font-size: 18px;
+        }
+        
+        .user-testimonials {
+            background-color: white;
+            border-radius: 10px;
+            padding: 50px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .testimonial-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .testimonial-header h3 {
+            font-size: 28px;
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+        
+        .testimonial-header p {
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .testimonials {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .testimonial {
+            background-color: #f9f9ff;
+            border-radius: 10px;
+            padding: 30px;
+            position: relative;
+        }
+        
+        .testimonial::before {
+            content: """;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 60px;
+            color: rgba(108, 99, 255, 0.1);
+            font-family: serif;
+            line-height: 1;
+        }
+        
+        .testimonial p {
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+        }
+        
+        .author-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 15px;
+        }
+        
+        .author-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            loading="lazy";
+        }
+        
+        .author-info h4 {
+            font-size: 18px;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+        
+        .author-info p {
+            color: #666;
+            font-size: 14px;
+            font-style: normal;
+        }
+        
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 60px 0 20px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-column h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .footer-column ul {
+            list-style: none;
+        }
+        
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-column ul li a {
+            color: #bbb;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-column ul li a:hover {
+            color: white;
+        }
+        
+        .footer-column ul li a[aria-current="page"] {
+            color: white;
+            font-weight: 600;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #bbb;
+            font-size: 14px;
+        }
+        
+        /* Accessibility improvements */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+        
+        /* Focus styles for accessibility */
+        a:focus, button:focus, input:focus, textarea:focus {
+            outline: 1px solid var(--primary);
+            outline-offset: 2px;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 36px;
+            }
+            
+            .hero p {
+                font-size: 18px;
+            }
+            
+            .about-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .about-image {
+                order: -1;
+            }
+            
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 80px;
+                left: 0;
+                width: 100%;
+                background-color: white;
+                padding: 20px;
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .nav-links li {
+                margin: 10px 0;
+            }
+            
+            .mobile-menu-btn {
+                display: block !important;
+                background: none;
+                border: none;
+                font-size: 24px;
+                color: var(--dark);
+                cursor: pointer;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Skip to content link for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header>
+        <div class="container">
+            <nav>
+                <a href="#home" class="logo" aria-label="MindEase Companion Home">
+                    <i class="fas fa-robot" aria-hidden="true"></i>
+                    <span>MindEase Companion</span>
+                </a>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="#home" aria-current="page">Home</a></li>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#users">Users</a></li>
+                    <li><a href="#login">Login</a></li>
+                </ul>
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Mobile menu" style="display: none;" aria-expanded="false">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <div class="container">
+            <!-- Home Page -->
+            <section id="home" class="page active" aria-labelledby="home-heading">
+                <div class="hero">
+                    <h1 id="home-heading">Your AI Mental Health Companion</h1>
+                    <p>MindEase Companion provides 24/7 emotional support using advanced AI technology to help you manage stress, anxiety, and improve your mental wellbeing.</p>
+                    <a href="#login" class="btn">Get Started</a>
+                </div>
+
+                <div class="features">
+                    <div class="feature-card">
+                        <i class="fas fa-comments" aria-hidden="true"></i>
+                        <h3>AI Chat Support</h3>
+                        <p>Talk to our compassionate AI anytime about your feelings and receive thoughtful responses.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-brain" aria-hidden="true"></i>
+                        <h3>CBT Exercises</h3>
+                        <p>Practice Cognitive Behavioral Therapy techniques to reframe negative thoughts.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-chart-line" aria-hidden="true"></i>
+                        <h3>Mood Tracking</h3>
+                        <p>Monitor your emotional patterns and identify triggers with our analytics dashboard.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Login Page -->
+            <section id="login" class="page" aria-labelledby="login-heading">
+                <div class="login-container">
+                    <h2 id="login-heading">Welcome Back</h2>
+                    <div class="error-message" id="loginError" role="alert" aria-live="assertive"></div>
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="loginEmail">Email</label>
+                            <input type="email" id="loginEmail" placeholder="Enter your email" required aria-required="true">
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" placeholder="Enter your password" required aria-required="true">
+                        </div>
+                        <div class="forgot-password">
+                            <a href="#reset">Forgot password?</a>
+                        </div>
+                        <button type="submit" class="btn login-btn">Login</button>
+                    </form>
+
+                    <div class="social-login">
+                        <p>Or login with</p>
+                        <div class="social-icons">
+                            <button onclick="signInWithGoogle()" class="social-icon" aria-label="Login with Google">
+                                <i class="fab fa-google" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="register-link">
+                        <p>Don't have an account? <a href="#register">Register here</a></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Register Page -->
+            <section id="register" class="page" aria-labelledby="register-heading">
+                <div class="login-container">
+                    <h2 id="register-heading">Create Account</h2>
+                    <div class="error-message" id="registerError" role="alert" aria-live="assertive"></div>
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label for="registerName">Full Name</label>
+                            <input type="text" id="registerName" placeholder="Enter your full name" required aria-required="true">
+                        </div>
+                        <div class="form-group">
+                            <label for="registerEmail">Email</label>
+                            <input type="email" id="registerEmail" placeholder="Enter your email" required aria-required="true">
+                        </div>
+                        <div class="form-group">
+                            <label for="registerPassword">Password</label>
+                            <input type="password" id="registerPassword" placeholder="Create a password (min 6 chars)" minlength="6" required aria-required="true">
+                        </div>
+                        <div class="form-group">
+                            <label for="registerConfirm">Confirm Password</label>
+                            <input type="password" id="registerConfirm" placeholder="Confirm your password" required aria-required="true">
+                        </div>
+                        <button type="submit" class="btn login-btn">Register</button>
+                    </form>
+
+                    <div class="register-link">
+                        <p>Already have an account? <a href="#login">Login here</a></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Password Reset Page -->
+            <section id="reset" class="page" aria-labelledby="reset-heading">
+                <div class="login-container">
+                    <h2 id="reset-heading">Reset Password</h2>
+                    <div class="error-message" id="resetError" role="alert" aria-live="assertive"></div>
+                    <div class="success-message" id="resetSuccess" style="display: none;" role="alert" aria-live="assertive"></div>
+                    <form id="resetForm">
+                        <div class="form-group">
+                            <label for="resetEmail">Email</label>
+                            <input type="email" id="resetEmail" placeholder="Enter your email" required aria-required="true">
+                        </div>
+                        <button type="submit" class="btn login-btn">Send Reset Link</button>
+                    </form>
+
+                    <div class="register-link">
+                        <p>Remember your password? <a href="#login">Login here</a></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- About Us Page -->
+            <section id="about" class="page" aria-labelledby="about-heading">
+                <div class="about-section">
+                    <h2 id="about-heading">About MindEase Companion</h2>
+                    <div class="about-content">
+                        <div class="about-text">
+                            <h3>Our Mission</h3>
+                            <p>MindEase Companion was founded in 2023 with a simple goal: to make mental health support accessible to everyone, anytime, anywhere.</p>
+                            <p>We combine cutting-edge artificial intelligence with proven therapeutic techniques to create a compassionate, always-available companion for your mental wellbeing.</p>
+                            <p>Our team of psychologists, AI experts, and designers work together to ensure MindEase provides safe, helpful support while respecting your privacy.</p>
+                            <a href="#" class="btn">Learn More About Our Technology</a>
+                        </div>
+                        <div class="about-image">
+                            <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" alt="Team working together" loading="lazy">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="team-section">
+                    <h2>Meet Our Team</h2>
+                    <div class="team-members">
+                        <div class="team-member">
+                            <div class="member-image">
+                                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Dr. Sarah Chen" loading="lazy">
+                            </div>
+                            <div class="member-info">
+                                <h3>Dr. Sarah Chen</h3>
+                                <p>Clinical Psychologist</p>
+                                <div class="member-social">
+                                    <a href="#" aria-label="LinkedIn profile"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
+                                    <a href="#" aria-label="Twitter profile"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="team-member">
+                            <div class="member-image">
+                                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="James Rodriguez" loading="lazy">
+                            </div>
+                            <div class="member-info">
+                                <h3>James Rodriguez</h3>
+                                <p>AI Research Lead</p>
+                                <div class="member-social">
+                                    <a href="#" aria-label="LinkedIn profile"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
+                                    <a href="#" aria-label="GitHub profile"><i class="fab fa-github" aria-hidden="true"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="team-member">
+                            <div class="member-image">
+                                <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Priya Patel" loading="lazy">
+                            </div>
+                            <div class="member-info">
+                                <h3>Priya Patel</h3>
+                                <p>Product Designer</p>
+                                <div class="member-social">
+                                    <a href="#" aria-label="Behance profile"><i class="fab fa-behance" aria-hidden="true"></i></a>
+                                    <a href="#" aria-label="Dribbble profile"><i class="fab fa-dribbble" aria-hidden="true"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="team-member">
+                            <div class="member-image">
+                                <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="David Kim" loading="lazy">
+                            </div>
+                            <div class="member-info">
+                                <h3>David Kim</h3>
+                                <p>Software Engineer</p>
+                                <div class="member-social">
+                                    <a href="#" aria-label="GitHub profile"><i class="fab fa-github" aria-hidden="true"></i></a>
+                                    <a href="#" aria-label="Dev.to profile"><i class="fab fa-dev" aria-hidden="true"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users Page -->
+            <section id="users" class="page" aria-labelledby="users-heading">
+                <div class="users-section">
+                    <h2 id="users-heading">Our Community</h2>
+                    <div class="user-stats">
+                        <div class="stat-card">
+                            <i class="fas fa-users" aria-hidden="true"></i>
+                            <h3>50,000+</h3>
+                            <p>Active Users</p>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-smile" aria-hidden="true"></i>
+                            <h3>92%</h3>
+                            <p>Report Improved Mood</p>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-comment-dots" aria-hidden="true"></i>
+                            <h3>1.2M</h3>
+                            <p>Conversations Monthly</p>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-globe" aria-hidden="true"></i>
+                            <h3>15+</h3>
+                            <p>Countries</p>
+                        </div>
+                    </div>
+
+                    <div class="user-testimonials">
+                        <div class="testimonial-header">
+                            <h3>What Our Users Say</h3>
+                            <p>Hear from people who have found support through MindEase Companion</p>
+                        </div>
+                        <div class="testimonials">
+                            <div class="testimonial">
+                                <p>MindEase has been a game-changer for my anxiety. When I wake up at 3am with racing thoughts, I can always talk to my AI companion who helps me calm down.</p>
+                                <div class="testimonial-author">
+                                    <div class="author-image">
+                                        <img src="https://randomuser.me/api/portraits/women/22.jpg" alt="Emma S." loading="lazy">
+                                    </div>
+                                    <div class="author-info">
+                                        <h4>Emma S.</h4>
+                                        <p>Teacher, 34</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="testimonial">
+                                <p>The CBT exercises helped me identify negative thought patterns I didn't even realize I had. After 3 months, I feel like I have new mental tools to handle stress.</p>
+                                <div class="testimonial-author">
+                                    <div class="author-image">
+                                        <img src="https://randomuser.me/api/portraits/men/41.jpg" alt="Carlos M." loading="lazy">
+                                    </div>
+                                    <div class="author-info">
+                                        <h4>Carlos M.</h4>
+                                        <p>Software Developer, 28</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="testimonial">
+                                <p>As someone who was skeptical about AI therapy, I'm amazed at how human the conversations feel. It's not a replacement for my therapist, but an amazing supplement.</p>
+                                <div class="testimonial-author">
+                                    <div class="author-image">
+                                        <img src="https://randomuser.me/api/portraits/women/63.jpg" alt="Aisha K." loading="lazy">
+                                    </div>
+                                    <div class="author-info">
+                                        <h4>Aisha K.</h4>
+                                        <p>Nurse, 42</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>MindEase</h3>
+                    <p>Your compassionate AI companion for mental health support anytime, anywhere.</p>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home" aria-current="page">Home</a></li>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#users">Users</a></li>
+                        <li><a href="#login">Login</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Mental Health Resources</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact Us</h3>
+                    <ul>
+                        <li><a href="mailto:hello@mindease.com">hello@mindease.com</a></li>
+                        <li><a href="tel:+18005551234">1-800-555-1234</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 MindEase Companion. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Firebase configuration - should be replaced with environment variables in production
+    const firebaseConfig = {
+    apiKey: "AIzaSyAjCYvM1SkHMtyIh_w7Wq8OkvpU9NYzDDA",
+    authDomain: "mindease-f29dc.firebaseapp.com",
+    projectId: "mindease-f29dc",
+    storageBucket: "mindease-f29dc.firebasestorage.app",
+    messagingSenderId: "798331814060",
+    appId: "1:798331814060:web:b8607fa552cffb14cfdf09",
+    measurementId: "G-169PZY1W10"
+   };
+
+    // Initialize Firebase with error handling
+    (function() {
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log("Firebase initialized successfully");
+            
+            // Enable persistence for better offline experience
+            firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+                .catch(error => {
+                    console.error("Error enabling persistence:", error);
+                });
+        } catch (err) {
+            console.error("Firebase initialization error", err);
+            showError("Firebase initialization failed. Please refresh the page.");
+        }
+    })();
+
+    const auth = firebase.auth();
+
+    // Security and configuration
+    function configureFirebaseSecurity() {
+        auth.useDeviceLanguage();
+        
+        // Disable app verification for testing on localhost
+        if (window.location.hostname === "localhost" || 
+            window.location.hostname === "127.0.0.1") {
+            auth.settings.appVerificationDisabledForTesting = true;
+        }
+    }
+
+    // Form validation utilities
+    const FormUtils = {
+        validateEmail: (email) => {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        },
+        
+        validatePassword: (password) => {
+            return password.length >= 6;
+        },
+        
+        showError: (element, message) => {
+            element.textContent = message;
+            element.style.display = 'block';
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        },
+        
+        showSuccess: (element, message) => {
+            element.textContent = message;
+            element.style.display = 'block';
+        },
+        
+        setLoading: (element, isLoading) => {
+            if (isLoading) {
+                element.classList.add('loading');
+                element.disabled = true;
+            } else {
+                element.classList.remove('loading');
+                element.disabled = false;
+            }
+        }
+    };
+
+    // Page navigation
+    const Navigation = {
+        showPage: (pageId, event = null) => {
+            if (event) {
+                event.preventDefault();
+            }
+            
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+                page.setAttribute('aria-hidden', 'true');
+            });
+            
+            // Show selected page
+            const activePage = document.getElementById(pageId);
+            if (activePage) {
+                activePage.classList.add('active');
+                activePage.setAttribute('aria-hidden', 'false');
+                
+                // Update URL
+                history.pushState({page: pageId}, '', `#${pageId}`);
+                
+                // Scroll to top
+                window.scrollTo(0, 0);
+                
+                // Update aria-current for nav links
+                document.querySelectorAll('.nav-links a, .footer-column a').forEach(link => {
+                    const linkPage = link.getAttribute('href').substring(1);
+                    link.setAttribute('aria-current', linkPage === pageId ? 'page' : 'false');
+                });
+                
+                // Close mobile menu if open
+                const navLinks = document.getElementById('navLinks');
+                if (navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                    document.getElementById('mobileMenuBtn').setAttribute('aria-expanded', 'false');
+                }
+            }
+        },
+        
+        handleHashChange: () => {
+            const hash = window.location.hash.substring(1);
+            const validPages = ['home', 'about', 'users', 'login', 'register', 'reset'];
+            
+            if (validPages.includes(hash)) {
+                Navigation.showPage(hash);
+            } else {
+                Navigation.showPage('home');
+            }
+        },
+        
+        initPageFromHash: () => {
+            Navigation.handleHashChange();
+        }
+    };
+
+    // Auth handlers
+    const AuthHandlers = {
+        initAuthStateListener: () => {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // Only redirect if coming from login page
+                    if (window.location.hash === '#login') {
+                        // Set flag for new session
+                        sessionStorage.setItem('newLogin', 'true');
+                        window.location.href = "chat.html";
+                    }
+                }
+            });
+        },
+        
+        handleLogin: async (email, password, errorElement, submitButton) => {
+            // Validate inputs
+            if (!FormUtils.validateEmail(email)) {
+                FormUtils.showError(errorElement, "Please enter a valid email address");
+                return false;
+            }
+
+            if (!FormUtils.validatePassword(password)) {
+                FormUtils.showError(errorElement, "Password must be at least 6 characters");
+                return false;
+            }
+
+            FormUtils.setLoading(submitButton, true);
+
+            try {
+                configureFirebaseSecurity();
+                await auth.signInWithEmailAndPassword(email, password);
+                return true;
+            } catch (error) {
+                let errorMessage = "Login failed. Please try again.";
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = "No account found with this email.";
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = "Incorrect password. Please try again.";
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = "Too many attempts. Please try again later.";
+                        break;
+                    case 'auth/user-disabled':
+                        errorMessage = "This account has been disabled.";
+                        break;
+                }
+                FormUtils.showError(errorElement, errorMessage);
+                return false;
+            } finally {
+                FormUtils.setLoading(submitButton, false);
+            }
+        },
+        
+        handleRegister: async (name, email, password, confirmPassword, errorElement, submitButton) => {
+            // Validate inputs
+            if (!name) {
+                FormUtils.showError(errorElement, "Please enter your name");
+                return false;
+            }
+
+            if (!FormUtils.validateEmail(email)) {
+                FormUtils.showError(errorElement, "Please enter a valid email address");
+                return false;
+            }
+
+            if (!FormUtils.validatePassword(password)) {
+                FormUtils.showError(errorElement, "Password must be at least 6 characters");
+                return false;
+            }
+
+            if (password !== confirmPassword) {
+                FormUtils.showError(errorElement, "Passwords don't match");
+                return false;
+            }
+
+            FormUtils.setLoading(submitButton, true);
+
+            try {
+                configureFirebaseSecurity();
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                
+                // Update user profile with name
+                await userCredential.user.updateProfile({
+                    displayName: name
+                });
+
+                // Show success message
+                const registerForm = document.getElementById('registerForm');
+                registerForm.innerHTML = `
+                    <div style="text-align: center; padding: 20px;">
+                        <i class="fas fa-check-circle" style="font-size: 50px; color: var(--success); margin-bottom: 20px;"></i>
+                        <h3>Registration Successful!</h3>
+                        <p>Your account has been created. Please login to continue.</p>
+                        <button onclick="Navigation.showPage('login')" class="btn" style="margin-top: 20px;">Go to Login</button>
+                    </div>
+                `;
+                
+                // Sign out the user after registration
+                await auth.signOut();
+                return true;
+            } catch (error) {
+                let errorMessage = "Registration failed. Please try again.";
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage = "This email is already registered. Please login.";
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = "Password should be at least 6 characters";
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = "The email address is invalid";
+                        break;
+                    case 'auth/operation-not-allowed':
+                        errorMessage = "Email/password accounts are not enabled";
+                        break;
+                }
+                FormUtils.showError(errorElement, errorMessage);
+                return false;
+            } finally {
+                FormUtils.setLoading(submitButton, false);
+            }
+        },
+        
+        handlePasswordReset: async (email, errorElement, successElement, submitButton) => {
+            if (!FormUtils.validateEmail(email)) {
+                FormUtils.showError(errorElement, "Please enter a valid email address");
+                return false;
+            }
+
+            FormUtils.setLoading(submitButton, true);
+
+            try {
+                configureFirebaseSecurity();
+                await auth.sendPasswordResetEmail(email);
+                FormUtils.showSuccess(successElement, "Password reset email sent. Please check your inbox.");
+                errorElement.style.display = 'none';
+                return true;
+            } catch (error) {
+                let errorMessage = "Failed to send reset email. Please try again.";
+                if (error.code === 'auth/user-not-found') {
+                    errorMessage = "No account found with this email.";
+                }
+                FormUtils.showError(errorElement, errorMessage);
+                successElement.style.display = 'none';
+                return false;
+            } finally {
+                FormUtils.setLoading(submitButton, false);
+            }
+        },
+        
+        signInWithGoogle: async (errorElement) => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            
+            try {
+                configureFirebaseSecurity();
+                await auth.signInWithPopup(provider);
+                return true;
+            } catch (error) {
+                let errorMessage = "Google sign-in failed. Please try again.";
+                switch (error.code) {
+                    case 'auth/popup-closed-by-user':
+                        errorMessage = "Sign-in popup was closed. Please try again.";
+                        break;
+                    case 'auth/account-exists-with-different-credential':
+                        errorMessage = "An account already exists with the same email but different sign-in credentials.";
+                        break;
+                    case 'auth/auth-domain-config-required':
+                        errorMessage = "Authentication domain configuration required.";
+                        break;
+                }
+                FormUtils.showError(errorElement, errorMessage);
+                return false;
+            }
+        }
+    };
+
+    // UI handlers
+    const UIHandlers = {
+        setupMobileMenu: () => {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const navLinks = document.getElementById('navLinks');
+            
+            if (mobileMenuBtn && navLinks) {
+                mobileMenuBtn.addEventListener('click', () => {
+                    const isExpanded = navLinks.classList.contains('active');
+                    navLinks.classList.toggle('active', !isExpanded);
+                    mobileMenuBtn.setAttribute('aria-expanded', !isExpanded);
+                });
+            }
+        },
+        
+        setupLinkHandlers: () => {
+            document.addEventListener('click', function(e) {
+                // Handle navbar and footer links
+                if (e.target.matches('.nav-links a, .footer-column a')) {
+                    const href = e.target.getAttribute('href');
+                    if (href.startsWith('#')) {
+                        const pageId = href.substring(1);
+                        Navigation.showPage(pageId, e);
+                    }
+                }
+            });
+        },
+        
+        setupWindowResize: () => {
+            window.addEventListener('resize', () => {
+                const navLinks = document.getElementById('navLinks');
+                const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+                
+                if (window.innerWidth > 768) {
+                    navLinks.style.display = 'flex';
+                    mobileMenuBtn.style.display = 'none';
+                    navLinks.classList.remove('active');
+                    mobileMenuBtn.setAttribute('aria-expanded', 'false');
+                } else {
+                    navLinks.style.display = 'none';
+                    mobileMenuBtn.style.display = 'block';
+                }
+            });
+        },
+        
+        setupFormHandlers: () => {
+            // Login form
+            document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                const errorElement = document.getElementById('loginError');
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                
+                await AuthHandlers.handleLogin(email, password, errorElement, submitButton);
+            });
+            
+            // Register form
+            document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('registerName').value.trim();
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+                const confirmPassword = document.getElementById('registerConfirm').value;
+                const errorElement = document.getElementById('registerError');
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                
+                await AuthHandlers.handleRegister(name, email, password, confirmPassword, errorElement, submitButton);
+            });
+            
+            // Password reset form
+            document.getElementById('resetForm')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('resetEmail').value;
+                const errorElement = document.getElementById('resetError');
+                const successElement = document.getElementById('resetSuccess');
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                
+                await AuthHandlers.handlePasswordReset(email, errorElement, successElement, submitButton);
+            });
+        },
+        
+        setupGoogleSignIn: () => {
+            window.signInWithGoogle = async () => {
+                const errorElement = document.getElementById('loginError');
+                await AuthHandlers.signInWithGoogle(errorElement);
+            };
+        }
+    };
+
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', () => {
+        Navigation.initPageFromHash();
+        configureFirebaseSecurity();
+        AuthHandlers.initAuthStateListener();
+        
+        UIHandlers.setupMobileMenu();
+        UIHandlers.setupLinkHandlers();
+        UIHandlers.setupWindowResize();
+        UIHandlers.setupFormHandlers();
+        UIHandlers.setupGoogleSignIn();
+        
+        // Check for mobile view
+        if (window.innerWidth <= 768) {
+            document.getElementById('navLinks').style.display = 'none';
+            document.getElementById('mobileMenuBtn').style.display = 'block';
+        }
+
+        // Check for redirect message
+        const urlParams = new URLSearchParams(window.location.search);
+        const message = urlParams.get('message');
+        if (message && document.getElementById('loginError')) {
+            FormUtils.showError(document.getElementById('loginError'), decodeURIComponent(message));
+        }
+    });
+
+    // Handle back/forward button
+    window.addEventListener('popstate', Navigation.handleHashChange);
+    </script>
+</body>
+</html>
