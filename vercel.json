@@ -4,6 +4,16 @@
     {
       "src": "frontend/**/*",
       "use": "@vercel/static"
+    },
+    {
+      "src": "public/**/*",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
     }
   ]
 }
