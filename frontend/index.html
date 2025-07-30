@@ -441,11 +441,11 @@
         }
         
         .team-members {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
         }
-        
+
         .team-member {
             background-color: white;
             border-radius: 10px;
@@ -914,60 +914,17 @@
                 <div class="team-section">
                     <h2>Meet Our Team</h2>
                     <div class="team-members">
-                        <div class="team-member">
+                        <d class="team-member">
                             <div class="member-image">
-                                <img src="/jayy.jpg" alt="Dr. Sarah Chen" loading="lazy">
+                                <img src="/public/jayy.jpg" alt="Dr. Sarah Chen" loading="lazy">
                             </div>
-                            <div class="member-info">
+                            <di class="member-info">
                                 <h3>Jay Tiwari</h3>
                                 <p>Founder of Seerror</p>
                                 <div class="member-social">
                                     <a href="#" aria-label="LinkedIn profile"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
                                     <a href="#" aria-label="Twitter profile"><i class="fab fa-twitter" aria-hidden="true"></i></a>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="team-member">
-                            <div class="member-image">
-                                <img src="/santosh.jpg" alt="James Rodriguez" loading="lazy">
-                            </div>
-                            <div class="member-info">
-                                <h3>Santosh Gupta</h3>
-                                <p>Founder of Zumagro</p>
-                                <div class="member-social">
-                                    <a href="#" aria-label="LinkedIn profile"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
-                                    <a href="#" aria-label="GitHub profile"><i class="fab fa-github" aria-hidden="true"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="team-member">
-                            <div class="member-image">
-                                <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Priya Patel" loading="lazy">
-                            </div>
-                            <div class="member-info">
-                                <h3>Priya Patel</h3>
-                                <p>Product Designer</p>
-                                <div class="member-social">
-                                    <a href="#" aria-label="Behance profile"><i class="fab fa-behance" aria-hidden="true"></i></a>
-                                    <a href="#" aria-label="Dribbble profile"><i class="fab fa-dribbble" aria-hidden="true"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="team-member">
-                            <div class="member-image">
-                                <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="David Kim" loading="lazy">
-                            </div>
-                            <div class="member-info">
-                                <h3>David Kim</h3>
-                                <p>Software Engineer</p>
-                                <div class="member-social">
-                                    <a href="#" aria-label="GitHub profile"><i class="fab fa-github" aria-hidden="true"></i></a>
-                                    <a href="#" aria-label="Dev.to profile"><i class="fab fa-dev" aria-hidden="true"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </section>
 
             <!-- Users Page -->
